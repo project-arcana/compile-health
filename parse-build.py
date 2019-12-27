@@ -51,14 +51,13 @@ for line in p.stdout.splitlines():
         line = line.replace(": && ", "")
         line = line.replace(" && :", "")
     line = line.strip()
-    # print(line)
     cmd = line.split()
 
     if len(cmd) == 0:
         continue
 
     if is_cxx_compiler(cmd[0]):
-        if is_compile_command(cmd):
+        if is_compile_command(cmd): # COMPILE
             cmds.append({
                 "type": "compile",
                 "source": cmd[cmd.index("-c") + 1],
@@ -68,7 +67,8 @@ for line in p.stdout.splitlines():
                 "cmd": line
             })
             compile_cmds += 1
-        elif is_link_command(cmd):
+
+        elif is_link_command(cmd): # LINK
             cmds.append({
                 "type": "link",
                 "output": cmd[cmd.index("-o") + 1],
@@ -77,14 +77,18 @@ for line in p.stdout.splitlines():
                 "cmd": line
             })
             link_cmds += 1
+
         else:
             assert False, "unknown compile command: " + line
-    elif is_archive_packing(line):
+
+    elif is_archive_packing(line): # PACK
         cmds.append({
             "type": "pack",
+            "output": cmd[cmd.index("remove") + 1],
             "cmd": line
         })
         pack_cmds += 1
+
     else:
         assert False, "unknown command: " + line
 
